@@ -25,10 +25,10 @@ numeric_features = meta["numeric_features"]
 feature_label_map = {
     "population": "Population",
     "racepctblack": "% Black Population",
-    "medIncome": "Median Income",
+    "medIncome": "Median Income (USD)",
     "racePctHisp": "% Hispanic Population",
     "racePctWhite": "% White Population",
-    "PctPopUnderPov": "% Under Poverty Line",
+    "PctPopUnderPov": "% Population Under Poverty Line",
 }
 
 # Only ask for these 6 features
@@ -63,26 +63,42 @@ for feat in ASK_FEATURES:
     label = feature_label_map[feat]
     default_val = default_values.get(feat, 0)
 
-    # numeric input
-    val = st.number_input(
-        label,
-        min_value=0.0,
-        max_value=1e12,
-        value=float(default_val),
-        step=1.0
-    )
+    # If it's a percentage feature → ask 0–100 range
+    if feat in ["racepctblack", "racePctHisp", "racePctWhite", "PctPopUnderPov"]:
+        val = st.slider(
+            label,
+            min_value=0.0,
+            max_value=100.0,
+            value=float(default_val),
+            step=0.1
+        )
+    else:
+        # numeric input for population or median income
+        val = st.number_input(
+            label,
+            min_value=0.0,
+            max_value=1e12,
+            value=float(default_val),
+            step=1.0
+        )
 
     user_inputs[feat] = val
 
 # -------------------------
 # CREATE INPUT DF
 # -------------------------
-# Fill the required columns of the model input
+# Initialize with 0 for all model-required columns
 input_row = {col: 0.0 for col in numeric_features}
 
-# Override the selected 6
+# Convert percentages to fractions (dataset uses 0–1)
+def normalize(v):
+    return v / 100.0 if v > 1 else v
+
 for k, v in user_inputs.items():
-    input_row[k] = v
+    if k in ["racepctblack", "racePctHisp", "racePctWhite", "PctPopUnderPov"]:
+        input_row[k] = normalize(v)
+    else:
+        input_row[k] = v
 
 X_input = pd.DataFrame([input_row])
 
