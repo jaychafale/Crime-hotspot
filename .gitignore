@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.ipynb_checkpoints/
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Model files
+models/*.joblib
+models/*.pkl
+
+# Datasets
+data/*.csv
+data/*.parquet
+data/*.json
+
+# Reports & Plots
+reports/*.png
+reports/*.csv
+reports/*.txt
+
+# Jupyter
+.ipynb_checkpoints/
